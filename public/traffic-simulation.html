@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bangalore Smart Traffic Management System - BTMS 2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            backdrop-filter: blur(10px);
+        }
+
+        .simulation-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        #trafficCanvas {
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            cursor: crosshair;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        #trafficCanvas:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .stats-panel {
+            width: 320px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(20px);
+            border-left: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            color: #fff;
+            box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                0 0 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, #00d4aa, #00a8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .control-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .control-group button {
+            flex: 1;
+            padding: 14px 18px;
+            background: linear-gradient(135deg, #00d4aa, #00a8ff);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 
+                0 4px 15px rgba(0, 212, 170, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-group button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .control-group button:hover::before {
+            left: 100%;
+        }
+
+        .control-group button:hover {
+            background: linear-gradient(135deg, #00e5bb, #00b8ff);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 25px rgba(0, 212, 170, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .control-group button:active {
+            transform: translateY(0);
+            box-shadow: 
+                0 2px 10px rgba(0, 212, 170, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .control-group button.warning {
+            background: linear-gradient(135deg, #ff9500, #ffb84d) !important;
+            box-shadow: 
+                0 4px 15px rgba(255, 149, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .control-group button.warning:hover {
+            background: linear-gradient(135deg, #ffab33, #ffcc66) !important;
+            box-shadow: 
+                0 8px 25px rgba(255, 149, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .control-group button.danger {
+            background: linear-gradient(135deg, #ff4757, #ff6b7a) !important;
+            box-shadow: 
+                0 4px 15px rgba(255, 71, 87, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .control-group button.danger:hover {
+            background: linear-gradient(135deg, #ff6b7a, #ff8a9e) !important;
+            box-shadow: 
+                0 8px 25px rgba(255, 71, 87, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .stats-content {
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .stats-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stats-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(4px);
+        }
+
+        .stats-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        .stats-value {
+            background: linear-gradient(135deg, #00d4aa, #00a8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            font-size: 16px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="simulation-area">
+            <canvas id="trafficCanvas" width="1000" height="1000"></canvas>
+        </div>
+        <div class="stats-panel">
+            <div class="stats-title">BTMS Control Center</div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label>Traffic Signal Control</label>
+                    <div class="control-buttons">
+                        <button onclick="startSimulation()">Start</button>
+                        <button onclick="pauseSimulation()" class="warning">Pause</button>
+                        <button onclick="resetSimulation()" class="danger">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-title">Real-time Analytics</div>
+            <div class="stats-content">
+                <div class="stats-item">
+                    <span class="stats-label">Simulation Timer:</span>
+                    <span class="stats-value" id="simulationTimer">0s / 120s</span>
+                </div>
+                <div class="stats-item">
+                    <span class="stats-label">Total Vehicles:</span>
+                    <span class="stats-value" id="totalCars">0</span>
+                </div>
+                <div class="stats-item">
+                    <span class="stats-label">Total Wait Time:</span>
+                    <span class="stats-value" id="totalWaitTime">0s</span>
+                </div>
+                <div class="stats-item">
+                    <span class="stats-label">Avg Wait Time:</span>
+                    <span class="stats-value" id="avgWaitTime">0s</span>
+                </div>
+                <div class="stats-item">
+                    <span class="stats-label">Destination Reached:</span>
+                    <span class="stats-value" id="destinationReached">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Bangalore Traffic Management System (BTMS) - Intelligent Traffic Control
+        // Simulating major junction scenarios like Silk Board, Electronic City, Whitefield
+        class TrafficSimulation {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.width = this.canvas.width;
+                this.height = this.canvas.height;
+                this.centerX = this.width / 2;
+                this.centerY = this.height / 2;
+                
+                // Animation
+                this.isRunning = false;
+                
+                // Simulation timer
+                this.simulationTime = 0;
+                this.maxSimulationTime = 120; // 120 seconds
+                this.carsReachedDestination = 0; // Track cars that reached destination
+                
+                // Road configuration - Bangalore junction specifications
+                this.roadWidth = 120; // Wide roads typical of Bangalore arterials
+                this.laneWidth = this.roadWidth / 2;
+                this.roadLength = 300;
+                this.tileSize = this.roadLength / 10;
+                this.junctionSize = 120;
+                
+                // Initialize modules
+                this.initializeCoordinates();
+                this.road = new Road(this);
+                this.signal = new TrafficSignal(this);
+                this.carManager = new CarManager(this);
+                
+                this.setupEventListeners();
+                this.render();
+            }
+            
+            initializeCoordinates() {
+                this.coordinates = {
+                    N: { inbound: [], outbound: [] },
+                    S: { inbound: [], outbound: [] },
+                    E: { inbound: [], outbound: [] },
+                    W: { inbound: [], outbound: [] }
+                };
+                
+                // Calculate coordinates for each tile (0-9) in each road
+                // LEFT-SIDE DRIVING RULES:
+                // Inbound: cars traveling toward junction (right side of travel direction for left-side driving)
+                // Outbound: cars traveling away from junction (left side of travel direction for left-side driving)
+                for (let tile = 0; tile <= 9; tile++) {
+                    const tileOffset = tile * this.tileSize + this.tileSize / 2;
+                    
+                    // North road (extends upward from center)
+                    const northY = this.centerY - this.junctionSize / 2 - tileOffset;
+                    // Inbound (toward junction): right side when traveling south (right lane = east side)
+                    this.coordinates.N.inbound[tile] = { 
+                        x: this.centerX + this.laneWidth / 2, 
+                        y: northY 
+                    };
+                    // Outbound (away from junction): left side when traveling north (left lane = west side)
+                    this.coordinates.N.outbound[tile] = { 
+                        x: this.centerX - this.laneWidth / 2, 
+                        y: northY 
+                    };
+                    
+                    // South road (extends downward from center)
+                    const southY = this.centerY + this.junctionSize / 2 + tileOffset;
+                    // Inbound (toward junction): right side when traveling north (right lane = west side)
+                    this.coordinates.S.inbound[tile] = { 
+                        x: this.centerX - this.laneWidth / 2, 
+                        y: southY 
+                    };
+                    // Outbound (away from junction): left side when traveling south (left lane = east side)
+                    this.coordinates.S.outbound[tile] = { 
+                        x: this.centerX + this.laneWidth / 2, 
+                        y: southY 
+                    };
+                    
+                    // East road (extends rightward from center)
+                    const eastX = this.centerX + this.junctionSize / 2 + tileOffset;
+                    // Inbound (toward junction): right side when traveling west (right lane = south side)
+                    this.coordinates.E.inbound[tile] = { 
+                        x: eastX, 
+                        y: this.centerY + this.laneWidth / 2 
+                    };
+                    // Outbound (away from junction): left side when traveling east (left lane = north side)
+                    this.coordinates.E.outbound[tile] = { 
+                        x: eastX, 
+                        y: this.centerY - this.laneWidth / 2 
+                    };
+                    
+                    // West road (extends leftward from center)
+                    const westX = this.centerX - this.junctionSize / 2 - tileOffset;
+                    // Inbound (toward junction): right side when traveling east (right lane = north side)
+                    this.coordinates.W.inbound[tile] = { 
+                        x: westX, 
+                        y: this.centerY - this.laneWidth / 2 
+                    };
+                    // Outbound (away from junction): left side when traveling west (left lane = south side)
+                    this.coordinates.W.outbound[tile] = { 
+                        x: westX, 
+                        y: this.centerY + this.laneWidth / 2 
+                    };
+                }
+            }
+        
+            setupEventListeners() {
+                // Canvas click to add cars or control signals
+                this.canvas.addEventListener('click', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    // Check if click is on a traffic signal light
+                    const clickedLight = this.signal.isClickOnSignal(x, y);
+                    if (clickedLight) {
+                        this.signal.handleSignalClick(clickedLight);
+                        console.log(`Clicked on traffic signal: ${clickedLight.road}-${clickedLight.direction}`);
+                    } else {
+                        console.log(`Canvas clicked at: ${x}, ${y}`);
+                    }
+                });
+                
+                // Canvas mouse move for hover effects
+                this.canvas.addEventListener('mousemove', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    // Check if mouse is over a traffic signal light
+                    const hoveredLight = this.signal.isClickOnSignal(x, y);
+                    this.signal.hoveredSignal = hoveredLight;
+                    
+                    // Change cursor style
+                    this.canvas.style.cursor = hoveredLight ? 'pointer' : 'crosshair';
+                });
+            }
+            
+            getCarCoordinates(road, lane, tile) {
+                if (!this.coordinates[road] || tile < 0 || tile > 9) {
+                    return null;
+                }
+                
+                // lane should be 'inbound' or 'outbound'
+                if (lane !== 'inbound' && lane !== 'outbound') {
+                    console.error('Invalid lane type. Must be "inbound" or "outbound"');
+                    return null;
+                }
+                
+                const roadCoords = this.coordinates[road];
+                return roadCoords[lane][tile];
+            }
+            
+            addCar(destination, road, lane, tile) {
+                return this.carManager.addCar(destination, road, lane, tile);
+            }
+            
+            updateStats() {
+                document.getElementById('simulationTimer').textContent = `${this.simulationTime}s / ${this.maxSimulationTime}s`;
+                document.getElementById('totalCars').textContent = this.carManager.getCarCount();
+                document.getElementById('totalWaitTime').textContent = this.carManager.getTotalWaitTime() + 's';
+                document.getElementById('avgWaitTime').textContent = this.carManager.getAverageWaitTime() + 's';
+                document.getElementById('destinationReached').textContent = this.carsReachedDestination;
+            }
+            
+            update(deltaTime) {
+                // Update car positions (basic movement for now)
+                this.cars.forEach(car => {
+                    // Simple movement logic - can be enhanced
+                    if (car.road === 'N') car.y += car.speed;
+                    else if (car.road === 'S') car.y -= car.speed;
+                    else if (car.road === 'E') car.x -= car.speed;
+                    else if (car.road === 'W') car.x += car.speed;
+                });
+                
+                // Remove cars that are off-screen
+                this.cars = this.cars.filter(car => 
+                    car.x > -50 && car.x < this.width + 50 && 
+                    car.y > -50 && car.y < this.height + 50
+                );
+                
+                this.updateStats();
+            }
+            
+            render() {
+                // Clear canvas
+                this.ctx.clearRect(0, 0, this.width, this.height);
+                
+                // Render all modules
+                this.road.render();
+                this.signal.render();
+                this.carManager.render();
+                
+                // Update simulation
+                if (this.isRunning) {
+                    this.update();
+                }
+                
+                // Continue animation loop
+                requestAnimationFrame(() => this.render());
+            }
+            
+            start() {
+                if (!this.isRunning) {
+                    this.isRunning = true;
+                    // Start simulation timer - each tick represents 1 second
+                    this.simulationTimer = setInterval(() => {
+                        this.simulateOneSecond();
+                    }, 1000);
+                }
+            }
+            
+            pause() {
+                this.isRunning = false;
+                if (this.simulationTimer) {
+                    clearInterval(this.simulationTimer);
+                    this.simulationTimer = null;
+                }
+            }
+            
+            reset() {
+                // Stop simulation timer
+                this.pause();
+                
+                // Clear all cars and reset IDs
+                this.carManager.clearAllCars();
+                this.carManager.resetCarIds();
+                
+                // Reset all traffic signals to red
+                this.signal.resetAllSignals();
+                
+                // Reset simulation state
+                this.isRunning = false;
+                
+                // Reset simulation timer
+                this.simulationTime = 0;
+                
+                // Reset destination counter
+                this.carsReachedDestination = 0;
+                
+                // Restore cars to original positions
+                this.setupInitialCars();
+                
+                // Update display
+                this.updateStats();
+            }
+            
+            simulateOneSecond() {
+                // Increment simulation timer
+                this.simulationTime += 1;
+                
+                // Check if simulation should end at 120 seconds
+                if (this.simulationTime >= this.maxSimulationTime) {
+                    this.pause();
+                    return;
+                }
+                
+                // SYNCHRONIZED SIMULATION STEP:
+                
+                // Step 1: Fetch all signals first (get current signal states)
+                const signalStates = this.fetchAllSignals();
+                
+                // Track all processed cars in this simulation tick to prevent double processing
+                const processedCars = new Set();
+                
+                // Step 2: Try to move cars in junction first (priority order: W, N, E, S)
+                this.moveJunctionCars(signalStates, processedCars);
+                
+                // Step 3: Try to move cars towards their direction for each road
+                this.moveRoadCars(signalStates, processedCars);
+                
+                // Step 4: Check for cars reaching destination (tile 9)
+                this.checkDestinationReached();
+                
+                // Step 5: Sync signal status with server
+                this.syncSignalStatus();
+                
+                this.updateStats();
+            }
+            
+            // Sync signal status with server
+            async syncSignalStatus() {
+                try {
+                    const signalStatus = this.signal.getAllSignalStatus();
+                    
+                    const response = await fetch('/api/signals/update', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(signalStatus)
+                    });
+                    
+                    if (!response.ok) {
+                        console.warn('Failed to sync signal status with server');
+                    }
+                } catch (error) {
+                    console.warn('Error syncing signal status:', error.message);
+                }
+            }
+            
+            // Fetch signal status from server
+            async fetchSignalStatus() {
+                try {
+                    const response = await fetch('/api/signals/status');
+                    if (response.ok) {
+                        const result = await response.json();
+                        return result.data;
+                    }
+                } catch (error) {
+                    console.warn('Error fetching signal status:', error.message);
+                }
+                return null;
+            }
+            
+            fetchAllSignals() {
+                // Fetch current signal states for all roads
+                return {
+                    N: this.signal.getSignalState('N'),
+                    E: this.signal.getSignalState('E'),
+                    S: this.signal.getSignalState('S'),
+                    W: this.signal.getSignalState('W')
+                };
+            }
+            
+            moveJunctionCars(signalStates, processedCars) {
+                const junctionOrder = ['E', 'S', 'W', 'N'];
+                
+                junctionOrder.forEach(direction => {
+                    // Find cars currently at junction (tile 0 inbound) heading to this direction
+                    const junctionCars = this.carManager.cars.filter(car => {
+                        // Car is at tile 0, on inbound lane, and heading to different destination
+                        const carLane = car.road === car.destination ? 'outbound' : 'inbound';
+                        return car.tile === 0 && 
+                               carLane === 'inbound' && 
+                               car.destination === direction && 
+                               car.road !== car.destination && 
+                               !processedCars.has(car.id);
+                    });
+                    
+                    junctionCars.forEach(car => {
+                        processedCars.add(car.id); // Mark as processed globally
+                        this.moveCarOneStep(car, signalStates);
+                    });
+                });
+            }
+            
+            moveRoadCars(signalStates, processedCars) {
+                const roads = ['E', 'S', 'W', 'N'];
+                
+                roads.forEach(road => {
+                    // Process inbound cars first (cars approaching junction)
+                    const inboundCars = this.carManager.cars
+                        .filter(car => {
+                            const carLane = car.road === car.destination ? 'outbound' : 'inbound';
+                            return car.road === road && 
+                                   carLane === 'inbound' && 
+                                   !processedCars.has(car.id);
+                        })
+                        .sort((a, b) => this.getCarPriority(a, road) - this.getCarPriority(b, road));
+                    
+                    inboundCars.forEach(car => {
+                        processedCars.add(car.id); // Mark as processed
+                        this.moveCarOneStep(car, signalStates);
+                    });
+                    
+                    // Then process outbound cars (cars moving away from junction)
+                    const outboundCars = this.carManager.cars
+                        .filter(car => {
+                            const carLane = car.road === car.destination ? 'outbound' : 'inbound';
+                            return car.road === road && 
+                                   carLane === 'outbound' && 
+                                   !processedCars.has(car.id);
+                        })
+                        .sort((a, b) => this.getCarPriority(a, road) - this.getCarPriority(b, road));
+                    
+                    outboundCars.forEach(car => {
+                        processedCars.add(car.id); // Mark as processed
+                        this.moveCarOneStep(car, signalStates);
+                    });
+                });
+            }
+            
+            getCarPriority(car, road) {
+                // Lower number = higher priority (moves first)
+                // Front cars (closer to junction) have lower tile numbers and higher priority
+                return car.tile;
+            }
+            
+            moveCarOneStep(car, signalStates) {
+                if (car.tile === 0 && car.road !== car.destination) {
+                    // Car is at junction (tile 0 on inbound lane), try to move to destination road
+                    this.moveCarFromJunctionToRoad(car, signalStates);
+                } else {
+                    // Car is on a road, try to move forward
+                    this.moveCarOnRoad(car, signalStates);
+                }
+            }
+            
+            moveCarFromJunctionToRoad(car, signalStates) {
+                // Move car from junction (tile 0 inbound) to destination road outbound lane tile 0
+                const destinationTile = 0;
+                const destinationLane = 'outbound';
+                
+                // Debug logging for car 11
+                if (car.id === 11) {
+                    console.log(`Car 11 debug: road=${car.road}, destination=${car.destination}, tile=${car.tile}`);
+                }
+                
+                // Check if destination road tile 0 outbound is available
+                const tileOccupied = this.isTileOccupied(car.destination, destinationLane, destinationTile);
+                
+                if (tileOccupied) {
+                    car.waitTime += 1; // Increment wait time due to occupied tile
+                    if (car.id === 11) console.log(`Car 11: Destination tile occupied`);
+                    return; // Can't move, tile occupied
+                }
+                
+                // Check if the specific movement is allowed (check L, S, or R signal specifically)
+                const movementAllowed = this.signal.isMovementAllowed(car.road, car.destination);
+                if (!movementAllowed) {
+                    car.waitTime += 1; // Increment wait time due to red signal for this specific movement
+                    if (car.id === 11) console.log(`Car 11: Movement not allowed (signal check failed)`);
+                    return; // Can't move, specific movement signal is red
+                }
+                
+                // Car can move - reset wait time and move
+                if (car.id === 11) console.log(`Car 11: MOVING! From ${car.road} to ${car.destination}`);
+                car.waitTime = 0;
+                car.road = car.destination;
+                car.tile = destinationTile;
+                this.updateCarVisualPosition(car);
+            }
+            
+            moveCarOnRoad(car, signalStates) {
+                if (car.tile === 1 && car.road !== car.destination) {
+                    // Car is at junction entry (inbound), check if can enter junction
+                    if (!this.canEnterJunction(car)) {
+                        car.waitTime += 1; // Increment wait time due to occupied tile at junction entry
+                        return; // Can't move, junction entry occupied
+                    }
+                    
+                    // Car can move to junction - reset wait time and move
+                    car.waitTime = 0;
+                    car.tile = 0;
+                    this.updateCarVisualPosition(car);
+                } else if (car.tile >= 9 && car.destination === car.road) {
+                    // Car has reached tile 9 of destination road - mark as reached destination
+                    this.carsReachedDestination += 1;
+                    this.carManager.removeCar(car.id);
+                    return;
+                } else if (car.tile > 10) {
+                    // Car has exited the simulation area, remove it
+                    this.carManager.removeCar(car.id);
+                    return;
+                } else {
+                    // Car is on road, move to next tile
+                    let nextTile;
+                    let currentLane, nextLane;
+                    
+                    if (car.destination === car.road) {
+                        // Car is moving away from junction (outbound)
+                        nextTile = car.tile + 1;
+                        currentLane = nextLane = 'outbound';
+                    } else {
+                        // Car is moving towards junction (inbound)
+                        nextTile = car.tile - 1;
+                        currentLane = nextLane = 'inbound';
+                        
+                        if (nextTile < 1) {
+                            nextTile = 1; // Stay at junction entry if can't enter
+                            return;
+                        }
+                    }
+                    
+                    // Check if next tile is occupied in the same lane
+                    if (this.isTileOccupied(car.road, nextLane, nextTile)) {
+                        car.waitTime += 1; // Increment wait time due to occupied next tile
+                        return; // Can't move, next tile occupied
+                    }
+                    
+                    // Car can move - reset wait time and move to next tile
+                    car.waitTime = 0;
+                    car.tile = nextTile;
+                    this.updateCarVisualPosition(car);
+                }
+            }
+            
+            checkDestinationReached() {
+                // This method is now integrated into moveCarOnRoad
+                // Cars are removed when they reach tile 9 of their destination road
+            }
+            
+            canEnterJunction(car) {
+                // Cars should be able to move to tile 0 of their current road (inbound) to wait for signal
+                // Only check if tile 0 inbound of current road is occupied by another car
+                const tile0Occupied = this.isTileOccupied(car.road, 'inbound', 0);
+                
+                return !tile0Occupied;
+            }
+            
+            isTileOccupied(road, lane, tile) {
+                return this.carManager.cars.some(car => {
+                    // Determine the car's current lane
+                    let carLane;
+                    if (car.road === car.destination) {
+                        carLane = 'outbound';
+                    } else {
+                        carLane = 'inbound';
+                    }
+                    
+                    return car.road === road && carLane === lane && car.tile === tile;
+                });
+            }
+            
+            updateCarVisualPosition(car) {
+                // Determine which lane the car should be in based on its current state
+                let lane;
+                if (car.road === car.destination) {
+                    // Car is on its destination road, traveling outbound
+                    lane = 'outbound';
+                } else {
+                    // Car is traveling toward junction, traveling inbound
+                    lane = 'inbound';
+                }
+                
+                const coords = this.getCarCoordinates(car.road, lane, car.tile);
+                
+                if (coords) {
+                    car.x = coords.x;
+                    car.y = coords.y;
+                    car.lane = lane; // Store lane information in car object
+                }
+            }
+            
+            update() {
+                // Visual updates only - movement is controlled by simulateOneSecond()
+                this.carManager.updateCars();
+                this.updateStats();
+            }
+            
+            setupInitialCars() {
+                // Add initial traffic across all roads for realistic Bangalore traffic simulation
+                // Simulating typical rush hour density across major junction approaches
+                // Format: addCar(destination, road, lane, tile)
+                
+                // North Road (from Whitefield/Marathahalli approach)
+                // Cars traveling toward junction (inbound) - various destinations
+                this.addCar('W', 'N', 'inbound', 1); // Vehicle heading to Electronic City (left turn)
+                this.addCar('W', 'N', 'inbound', 3); // Another car toward Electronic City
+                this.addCar('E', 'N', 'inbound', 5); // Vehicle toward ORR East (right turn)
+                this.addCar('S', 'N', 'inbound', 7); // Vehicle continuing south to Silk Board
+                this.addCar('E', 'N', 'inbound', 9); // Another car toward ORR East
+                
+                // East road cars (facing West toward junction)
+                // Cars traveling toward junction (inbound) - various destinations
+                this.addCar('N', 'E', 'inbound', 1); // Tile 1 → North (left)
+                this.addCar('N', 'E', 'inbound', 3); // Tile 3 → North (left)
+                this.addCar('S', 'E', 'inbound', 5); // Tile 5 → South (right)
+                this.addCar('W', 'E', 'inbound', 7); // Tile 7 → West (opposite)
+                this.addCar('S', 'E', 'inbound', 9); // Tile 9 → South (right)
+                
+                // South road cars (facing North toward junction)
+                // Cars traveling toward junction (inbound) - various destinations
+                this.addCar('E', 'S', 'inbound', 1); // Tile 1 → East (left)
+                this.addCar('E', 'S', 'inbound', 3); // Tile 3 → East (left)
+                this.addCar('W', 'S', 'inbound', 5); // Tile 5 → West (right)
+                this.addCar('N', 'S', 'inbound', 7); // Tile 7 → North (opposite)
+                this.addCar('W', 'S', 'inbound', 9); // Tile 9 → West (right)
+                
+                // West road cars (facing East toward junction)
+                // Cars traveling toward junction (inbound) - various destinations
+                this.addCar('S', 'W', 'inbound', 1); // Tile 1 → South (left)
+                this.addCar('S', 'W', 'inbound', 3); // Tile 3 → South (left)
+                this.addCar('N', 'W', 'inbound', 5); // Tile 5 → North (right)
+                this.addCar('E', 'W', 'inbound', 7); // Tile 7 → East (opposite)
+                this.addCar('N', 'W', 'inbound', 9); // Tile 9 → North (right)
+            }
+        }
+
+        // Global simulation instance
+        let simulation;
+
+        // Initialize simulation when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            simulation = new TrafficSimulation('trafficCanvas');
+            
+            // Setup initial car arrangement
+            simulation.setupInitialCars();
+            
+            // Update stats to show the initial car count
+            simulation.updateStats();
+        });
+
+        // Control functions for buttons
+        function startSimulation() {
+            simulation.start();
+        }
+
+        function pauseSimulation() {
+            simulation.pause();
+        }
+
+        function resetSimulation() {
+            simulation.reset();
+        }
+
+        // Expose simulation for external access
+        window.simulation = simulation;
+    </script>
+    <script src="destination.js"></script>
+    <script src="road.js"></script>
+    <script src="signal.js"></script>
+    <script src="car.js"></script>
+</body>
+</html>
