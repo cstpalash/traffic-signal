@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bangalore Smart Traffic Management System - BTMS 2025</title>
+    <title>Marathahalli Junction AI Traffic Control - Bangalore Smart City</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -227,11 +227,11 @@
             <canvas id="trafficCanvas" width="1000" height="1000"></canvas>
         </div>
         <div class="stats-panel">
-            <div class="stats-title">BTMS Control Center</div>
+            <div class="stats-title">Marathahalli Junction Control</div>
             
             <div class="controls">
                 <div class="control-group">
-                    <label>Traffic Signal Control</label>
+                    <label>IT Corridor Traffic Control</label>
                     <div class="control-buttons">
                         <button onclick="startSimulation()">Start</button>
                         <button onclick="pauseSimulation()" class="warning">Pause</button>
@@ -240,14 +240,14 @@
                 </div>
             </div>
 
-            <div class="stats-title">Real-time Analytics</div>
+            <div class="stats-title">Bangalore Traffic Analytics</div>
             <div class="stats-content">
                 <div class="stats-item">
                     <span class="stats-label">Simulation Timer:</span>
                     <span class="stats-value" id="simulationTimer">0s / 120s</span>
                 </div>
                 <div class="stats-item">
-                    <span class="stats-label">Total Vehicles:</span>
+                    <span class="stats-label">Vehicles:</span>
                     <span class="stats-value" id="totalCars">0</span>
                 </div>
                 <div class="stats-item">
@@ -259,7 +259,7 @@
                     <span class="stats-value" id="avgWaitTime">0s</span>
                 </div>
                 <div class="stats-item">
-                    <span class="stats-label">Destination Reached:</span>
+                    <span class="stats-label">Reached Destination:</span>
                     <span class="stats-value" id="destinationReached">0</span>
                 </div>
             </div>
@@ -267,9 +267,9 @@
     </div>
 
     <script>
-        // Bangalore Traffic Management System (BTMS) - Intelligent Traffic Control
-        // Simulating major junction scenarios like Silk Board, Electronic City, Whitefield
-        class TrafficSimulation {
+        // Marathahalli Junction Traffic Control System - Bangalore Smart City Initiative
+        // Simulating IT corridor traffic: ITPL, Brookefield, Electronic City routes
+        class MarathahalliTrafficSimulation {
             constructor(canvasId) {
                 this.canvas = document.getElementById(canvasId);
                 this.ctx = this.canvas.getContext('2d');
@@ -283,17 +283,17 @@
                 
                 // Simulation timer
                 this.simulationTime = 0;
-                this.maxSimulationTime = 120; // 120 seconds
-                this.carsReachedDestination = 0; // Track cars that reached destination
+                this.maxSimulationTime = 120; // 120 seconds simulation
+                this.carsReachedDestination = 0; // Track vehicles reaching tech parks
                 
-                // Road configuration - Bangalore junction specifications
-                this.roadWidth = 120; // Wide roads typical of Bangalore arterials
+                // Marathahalli junction specifications - IT corridor roads
+                this.roadWidth = 120; // Wide roads for Bangalore arterials (ORR, Whitefield Road)
                 this.laneWidth = this.roadWidth / 2;
                 this.roadLength = 300;
                 this.tileSize = this.roadLength / 10;
-                this.junctionSize = 120;
+                this.junctionSize = 120; // Large junction like Marathahalli
                 
-                // Initialize modules
+                // Initialize Bangalore traffic modules
                 this.initializeCoordinates();
                 this.road = new Road(this);
                 this.signal = new TrafficSignal(this);
@@ -846,21 +846,21 @@
             }
         }
 
-        // Global simulation instance
+        // Global Marathahalli simulation instance
         let simulation;
 
-        // Initialize simulation when page loads
+        // Initialize Marathahalli traffic simulation when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            simulation = new TrafficSimulation('trafficCanvas');
+            simulation = new MarathahalliTrafficSimulation('trafficCanvas');
             
-            // Setup initial car arrangement
+            // Setup initial IT corridor car arrangement
             simulation.setupInitialCars();
             
-            // Update stats to show the initial car count
+            // Update Bangalore traffic stats to show the initial vehicle count
             simulation.updateStats();
         });
 
-        // Control functions for buttons
+        // Control functions for Marathahalli junction buttons
         function startSimulation() {
             simulation.start();
         }
@@ -873,7 +873,7 @@
             simulation.reset();
         }
 
-        // Expose simulation for external access
+        // Expose Marathahalli simulation for external access
         window.simulation = simulation;
     </script>
     <script src="destination.js"></script>

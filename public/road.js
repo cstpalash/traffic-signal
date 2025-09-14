@@ -165,36 +165,48 @@ class Road {
     
     drawLabels() {
         const ctx = this.ctx;
-        ctx.font = 'bold 16px Arial';
+        ctx.font = 'bold 14px Arial';
         ctx.textAlign = 'center';
         
         // Get destination colors from centralized DestinationManager
         const colors = DestinationManager.getDestinationColors();
         
-        // Road labels - positioned 25px away from the end of each road
-        // North label - 25px above the north road end (Blue)
+        // Marathahalli Junction road labels - positioned 25px away from the end of each road
+        // North: Whitefield Road - to IT Parks, ITPL, Prestige Tech Park (Blue)
         ctx.fillStyle = colors.N;
-        ctx.fillText('NORTH', this.centerX, this.centerY - this.junctionSize / 2 - this.roadLength - 25);
+        ctx.fillText('WHITEFIELD ROAD', this.centerX, this.centerY - this.junctionSize / 2 - this.roadLength - 40);
+        ctx.font = 'normal 10px Arial';
+        ctx.fillText('→ IT Parks, ITPL, Tech Parks', this.centerX, this.centerY - this.junctionSize / 2 - this.roadLength - 25);
+        ctx.font = 'bold 14px Arial';
         
-        // South label - 25px below the south road end (Brown)
+        // South: Outer Ring Road - to Electronic City, Sarjapur, Koramangala (Brown)
         ctx.fillStyle = colors.S;
-        ctx.fillText('SOUTH', this.centerX, this.centerY + this.junctionSize / 2 + this.roadLength + 25);
+        ctx.fillText('OUTER RING ROAD', this.centerX, this.centerY + this.junctionSize / 2 + this.roadLength + 40);
+        ctx.font = 'normal 10px Arial';
+        ctx.fillText('→ Electronic City, Sarjapur', this.centerX, this.centerY + this.junctionSize / 2 + this.roadLength + 25);
+        ctx.font = 'bold 14px Arial';
         
-        // West label - 25px to the left of the west road end (Purple)
+        // West: Airport Road - to Bangalore Airport, Hennur, Hebbal (Purple)
         ctx.fillStyle = colors.W;
         ctx.save();
-        ctx.translate(this.centerX - this.junctionSize / 2 - this.roadLength - 25, this.centerY);
+        ctx.translate(this.centerX - this.junctionSize / 2 - this.roadLength - 40, this.centerY);
         ctx.rotate(-Math.PI / 2);
-        ctx.fillText('WEST', 0, 0);
+        ctx.fillText('AIRPORT ROAD', 0, 0);
+        ctx.font = 'normal 10px Arial';
+        ctx.fillText('→ BLR Airport, Hebbal', 0, 15);
         ctx.restore();
+        ctx.font = 'bold 14px Arial';
         
-        // East label - 25px to the right of the east road end (Yellow)
+        // East: Varthur Road - to Brookefield, Kundalahalli, HAL (Yellow)
         ctx.fillStyle = colors.E;
         ctx.save();
-        ctx.translate(this.centerX + this.junctionSize / 2 + this.roadLength + 25, this.centerY);
+        ctx.translate(this.centerX + this.junctionSize / 2 + this.roadLength + 40, this.centerY);
         ctx.rotate(Math.PI / 2);
-        ctx.fillText('EAST', 0, 0);
+        ctx.fillText('VARTHUR ROAD', 0, 0);
+        ctx.font = 'normal 10px Arial';
+        ctx.fillText('→ Brookefield, HAL', 0, 15);
         ctx.restore();
+        ctx.font = 'bold 14px Arial';
     }
     
     drawLaneArrows() {
